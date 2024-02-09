@@ -13,6 +13,9 @@ app.get("/random",(req,res)=>{
   res.json(jokes[randomIndex]);
 }
 );
+
+
+
 //2. GET a specific joke
 app.get("/jokes/:id",(req,res)=>{
   const id=req.params.id;
@@ -20,21 +23,89 @@ app.get("/jokes/:id",(req,res)=>{
   res.json(joke);
 });
 
+
+
 //3. GET a jokes by filtering on the joke type
 app.get("/filter",(req,res)=>{
   const type=req.query.type;
   const joke_arr=jokes.filter((joke)=>joke.jokeType==type);
   res.json(joke_arr);
 });
+
+
+
 //4. POST a new joke
+app.post("/jokes",(req,res)=>{
+  const new_joke={
+    id:jokes.length+1,
+    jokeText:req.body.text,
+    jokeType:req.body.type
+  };
+  jokes.push(new_joke);
+  console.log("added");
+  res.json(new_joke);
+});
+
+
 
 //5. PUT a joke
+app.put("/jokes/:id",(req,res)=>{
+  const id=req.params.id;
+  console.log(req.body.text);
+  const new_joke={
+    id : id,
+    jokeText:req.body.text,
+    jokeType:req.body.type
+  };
+  const index=jokes.findIndex((joke)=>joke.id==id);
+  jokes[index]=new_joke;
+  res.json(new_joke);
+});
+
+
 
 //6. PATCH a joke
+app.patch("/jokes/:id",(req,res)=>{
+  const id=req.params.id;
+  const index=jokes.findIndex((joke)=>joke.id==id);
+  if(req.body.text){
+    jokes[index].jokeText=req.body.text;
+  }
+  if(req.body.type){
+    jokes[index].jokeType=req.body.type;
+  }
+  res.json(jokes[index]);
+});
+
 
 //7. DELETE Specific joke
+app.delete("/jokes/:id",(req,res)=>{
+  const id=req.params.id;
+  const index=jokes.findIndex((joke)=>joke.id==id);
+  if(index>-1){
+    jokes.splice(index,1);
+    res.sendStatus(200).json({success:"success"});
+    console.log("removed");
+  }
+  else{
+    res.sendStatus(404).json({err:"error generated "});
+    console.log("err");
+  }
+});
+
 
 //8. DELETE All jokes
+app.delete("/all",(req,res)=>{
+  const key=req.query.key;
+  if(key==masterKey){
+    jokes=[];
+    res.sendStatus(200).json({success:"success"});  
+  }
+  else{
+    res.sendStatus(404).json({err:"you are not authorized"});
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
